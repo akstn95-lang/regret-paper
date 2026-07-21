@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>반성문 작성 도우미</title>
+<style>
+  :root{
+    --primary:#3a5a9c; --primary-dark:#2c4576; --bg:#f4f6fb; --card:#ffffff;
+    --text:#2a2f3a; --muted:#6b7280; --danger:#c0392b; --ok:#2f8f4e; --border:#e2e6ee;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    background:var(--bg); color:var(--text); min-height:100vh;
+    display:flex; justify-content:center; padding:32px 16px;
+  }
+  .app{width:100%; max-width:640px;}
+  .card{
+    background:var(--card); border-radius:16px; padding:28px 26px;
+    box-shadow:0 4px 24px rgba(30,40,80,0.08); margin-bottom:18px;
+  }
+  h1{font-size:22px; margin:0 0 6px;}
+  h2{font-size:17px; margin:0 0 14px; color:var(--primary-dark);}
+  p.desc{color:var(--muted); font-size:14px; margin:0 0 20px; line-height:1.6;}
+  label{display:block; font-size:14px; font-weight:600; margin:14px 0 6px;}
+  input[type=text], input[type=email], input[type=date], input[type=password], textarea{
+    width:100%; padding:11px 13px; border:1px solid var(--border); border-radius:10px;
+    font-size:15px; font-family:inherit; background:#fbfcff;
+  }
+  textarea{resize:vertical; min-height:110px; line-height:1.5;}
+  input:focus, textarea:focus{outline:none; border-color:var(--primary);}
+  .hint{font-size:12.5px; color:var(--muted); margin-top:4px;}
+  .err{font-size:13px; color:var(--danger); margin-top:6px; display:none;}
+  .btn{
+    display:inline-block; padding:12px 22px; border:none; border-radius:10px;
+    background:var(--primary); color:#fff; font-size:15px; font-weight:600;
+    cursor:pointer; margin-top:18px;
+  }
+  .btn:hover{background:var(--primary-dark);}
+  .btn.secondary{background:#eef1f8; color:var(--primary-dark);}
+  .btn.secondary:hover{background:#dfe4f3;}
+  .btn:disabled{opacity:0.5; cursor:not-allowed;}
+  .btn-row{display:flex; gap:10px; flex-wrap:wrap;}
+  .toggle-link{
+    font-size:13px; color:var(--muted); text-decoration:underline; cursor:pointer;
+    display:inline-block; margin-top:10px;
+  }
+  .hidden{display:none !important;}
+  .progress{font-size:13px; color:var(--muted); margin-bottom:12px;}
+  .question-box{
+    background:#eef2fb; border-left:4px solid var(--primary); border-radius:8px;
+    padding:14px 16px; margin-bottom:16px; font-size:15px; line-height:1.6;
+  }
+  .feedback-box{
+    background:#fff4e9; border-left:4px solid #d98324; border-radius:8px;
+    padding:12px 15px; margin-bottom:14px; font-size:14px; line-height:1.6; color:#8a5a1e;
+  }
+  .history{margin-top:20px;}
+  .history-item{padding:10px 0; border-bottom:1px solid var(--border); font-size:13.5px;}
+  .history-item .q{color:var(--primary-dark); font-weight:600; margin-bottom:4px;}
+  .history-item .a{color:var(--text);}
+  .letter-box{
+    white-space:pre-wrap; background:#fbfcff; border:1px solid var(--border);
+    border-radius:10px; padding:18px; font-size:14.5px; line-height:1.75; max-height:480px;
+    overflow-y:auto;
+  }
+  .score-badge{
+    display:inline-block; padding:6px 14px; border-radius:999px; font-weight:700; font-size:14px;
+    margin-bottom:14px;
+  }
+  .score-badge.pass{background:#e5f6ea; color:var(--ok);}
+  .score-badge.fail{background:#fdeceb; color:var(--danger);}
+  .spinner{
+    display:inline-block; width:16px; height:16px; border:2px solid #cbd5f0;
+    border-top-color:var(--primary); border-radius:50%; animation:spin 0.7s linear infinite;
+    vertical-align:middle; margin-right:8px;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .status-line{font-size:13.5px; color:var(--muted); margin-top:10px;}
+  .admin-panel{border:1px dashed var(--border); border-radius:10px; padding:16px; margin-top:14px; background:#fafbff;}
+  .footer-note{font-size:12px; color:var(--muted); text-align:center; margin-top:6px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ 화면 1: 기본 정보 입력 ============ -->
+  <div class="card" id="screen-start">
+    <h1>반성문 작성 도우미</h1>
+    <p class="desc">아래 정보를 입력한 뒤, 이어지는 질문에 솔직하고 구체적으로 답해주세요.
+    성의 없이 짧게 답하면 다음 질문으로 넘어가지 않아요.</p>
+
+    <label for="in-date">날짜</label>
+    <input type="date" id="in-date">
+
+    <label for="in-sid">학번 (4자리)</label>
+    <input type="text" id="in-sid" maxlength="4" placeholder="예: 1203" inputmode="numeric">
+
+    <label for="in-name">이름</label>
+    <input type="text" id="in-name" placeholder="예: 홍길동">
+
+    <label for="in-pemail">부모님 이메일</label>
+    <input type="email" id="in-pemail" placeholder="예: parent@example.com">
+
+    <div class="err" id="start-err"></div>
+    <button class="btn" id="btn-start">시작하기</button>
+
+    <div>
+      <span class="toggle-link" id="toggle-admin">관리자(교사) 설정 열기</span>
+    </div>
+
+    <div class="admin-panel hidden" id="admin-panel">
+      <label for="admin-pw">관리자 비밀번호</label>
+      <input type="password" id="admin-pw" placeholder="비밀번호 입력">
+      <div class="btn-row">
+        <button class="btn secondary" id="btn-admin-load">현재 컷트라인 확인</button>
+      </div>
+      <div id="admin-current" class="status-line"></div>
+      <label for="admin-cutoff">반성 점수 컷트라인 (0~100)</label>
+      <input type="text" id="admin-cutoff" placeholder="예: 70" inputmode="numeric">
+      <div class="btn-row">
+        <button class="btn" id="btn-admin-save">컷트라인 저장</button>
+      </div>
+      <div class="err" id="admin-err"></div>
+      <div class="status-line" id="admin-status"></div>
+    </div>
+  </div>
+
+  <!-- ============ 화면 2: 질문/답변 ============ -->
+  <div class="card hidden" id="screen-qa">
+    <h2>스스로를 돌아보는 질문</h2>
+    <div class="progress" id="qa-progress"></div>
+    <div class="feedback-box hidden" id="qa-feedback"></div>
+    <div class="question-box" id="qa-question"></div>
+    <textarea id="qa-answer" placeholder="솔직하고 구체적으로 답변해주세요."></textarea>
+    <div class="err" id="qa-err"></div>
+    <button class="btn" id="btn-submit-answer">답변 제출</button>
+    <div class="status-line hidden" id="qa-loading"><span class="spinner"></span>확인하고 있어요...</div>
+
+    <div class="history" id="qa-history"></div>
+  </div>
+
+  <!-- ============ 화면 3: 결과 ============ -->
+  <div class="card hidden" id="screen-result">
+    <h2>반성문 완성</h2>
+    <div id="result-badge"></div>
+    <div class="letter-box" id="result-letter"></div>
+    <div class="btn-row">
+      <button class="btn secondary" id="btn-download">텍스트 파일로 저장</button>
+      <button class="btn" id="btn-send-email">이메일로 발송</button>
+    </div>
+    <div class="err" id="result-err"></div>
+    <div class="status-line" id="result-status"></div>
+  </div>
+
+  <p class="footer-note">본 도구는 학생의 진솔한 반성을 돕기 위한 것입니다. 작성된 내용은 교사와 부모님께 전달됩니다.</p>
+</div>
+
+<script>
+/* ============================================================
+   설정: 배포한 GAS 웹 앱 URL을 아래에 붙여넣으세요.
+   예: https://script.google.com/macros/s/AKfycb.../exec
+============================================================ */
+const CONFIG = {
+  GAS_URL: "여기에_배포한_GAS_웹앱_URL을_붙여넣으세요"
+};
+
+// ---------- 공통 통신 함수 ----------
+// GAS 웹 앱과의 CORS preflight 문제를 피하기 위해 text/plain으로 전송하고,
+// 서버(doPost)에서 JSON.parse로 그대로 파싱합니다.
+async function callGAS(body) {
+  const res = await fetch(CONFIG.GAS_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error("서버 응답 오류: " + res.status);
+  return res.json();
+}
+
+// ---------- 상태 ----------
+let state = {
+  studentInfo: { date: "", studentId: "", name: "", parentEmail: "" },
+  history: [],       // [{question, answer}]
+  currentQuestion: "",
+  finalizeAttempts: 0,
+  MAX_FINALIZE_ATTEMPTS: 3
+};
+
+// ---------- 유틸 ----------
+function $(id){ return document.getElementById(id); }
+function showErr(id, msg){ const el=$(id); el.textContent = msg; el.style.display = msg ? "block" : "none"; }
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+}
+$("in-date").value = todayStr();
+
+// ---------- 관리자 패널 토글 ----------
+$("toggle-admin").addEventListener("click", () => {
+  $("admin-panel").classList.toggle("hidden");
+});
+
+$("btn-admin-load").addEventListener("click", async () => {
+  showErr("admin-err", "");
+  const pw = $("admin-pw").value;
+  if (!pw) { showErr("admin-err", "비밀번호를 입력해주세요."); return; }
+  $("admin-current").textContent = "확인 중...";
+  try {
+    const r = await callGAS({ action: "getCutoff", password: pw });
+    if (!r.ok) { showErr("admin-err", r.error || "비밀번호가 올바르지 않습니다."); $("admin-current").textContent=""; return; }
+    $("admin-current").textContent = "현재 컷트라인: " + r.cutoff + "점";
+    $("admin-cutoff").value = r.cutoff;
+  } catch(e) {
+    showErr("admin-err", "서버 연결 오류: " + e.message);
+    $("admin-current").textContent = "";
+  }
+});
+
+$("btn-admin-save").addEventListener("click", async () => {
+  showErr("admin-err", "");
+  $("admin-status").textContent = "";
+  const pw = $("admin-pw").value;
+  const cutoff = $("admin-cutoff").value;
+  if (!pw) { showErr("admin-err", "비밀번호를 입력해주세요."); return; }
+  if (!/^\d+$/.test(cutoff) || Number(cutoff) < 0 || Number(cutoff) > 100) {
+    showErr("admin-err", "컷트라인은 0~100 사이의 숫자로 입력해주세요."); return;
+  }
+  try {
+    const r = await callGAS({ action: "setCutoff", password: pw, cutoff: Number(cutoff) });
+    if (!r.ok) { showErr("admin-err", r.error || "저장 실패"); return; }
+    $("admin-status").textContent = "저장되었습니다. (컷트라인: " + r.cutoff + "점)";
+  } catch(e) {
+    showErr("admin-err", "서버 연결 오류: " + e.message);
+  }
+});
+
+// ---------- 화면 1 -> 시작 ----------
+$("btn-start").addEventListener("click", async () => {
+  showErr("start-err", "");
+  const date = $("in-date").value;
+  const sid = $("in-sid").value.trim();
+  const name = $("in-name").value.trim();
+  const pemail = $("in-pemail").value.trim();
+
+  if (!date) return showErr("start-err", "날짜를 입력해주세요.");
+  if (!/^\d{4}$/.test(sid)) return showErr("start-err", "학번은 숫자 4자리로 입력해주세요.");
+  if (!name) return showErr("start-err", "이름을 입력해주세요.");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(pemail)) return showErr("start-err", "부모님 이메일 형식을 확인해주세요.");
+
+  state.studentInfo = { date, studentId: sid, name, parentEmail: pemail };
+
+  $("btn-start").disabled = true;
+  $("btn-start").textContent = "질문 준비 중...";
+  try {
+    const r = await callGAS({ action: "nextTurn", payload: { studentInfo: state.studentInfo, history: [] } });
+    if (!r.ok) throw new Error(r.error || "질문 생성 실패");
+    state.currentQuestion = r.question;
+    $("screen-start").classList.add("hidden");
+    $("screen-qa").classList.remove("hidden");
+    renderQuestion();
+  } catch(e) {
+    showErr("start-err", "서버 연결 오류: " + e.message + " (GAS_URL 설정을 확인해주세요)");
+  } finally {
+    $("btn-start").disabled = false;
+    $("btn-start").textContent = "시작하기";
+  }
+});
+
+// ---------- 화면 2: 질문/답변 렌더링 ----------
+function renderQuestion() {
+  $("qa-question").textContent = state.currentQuestion;
+  $("qa-progress").textContent = "지금까지 성실하게 답변한 횟수: " + state.history.length + "개";
+  $("qa-answer").value = "";
+  renderHistory();
+}
+
+function renderHistory() {
+  const box = $("qa-history");
+  box.innerHTML = "";
+  state.history.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "history-item";
+    div.innerHTML = '<div class="q">Q. ' + escapeHtml(item.question) + '</div><div class="a">A. ' + escapeHtml(item.answer) + '</div>';
+    box.appendChild(div);
+  });
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+$("btn-submit-answer").addEventListener("click", async () => {
+  showErr("qa-err", "");
+  const answer = $("qa-answer").value.trim();
+  if (answer.length < 2) return showErr("qa-err", "답변을 입력해주세요.");
+
+  $("btn-submit-answer").disabled = true;
+  $("qa-loading").classList.remove("hidden");
+  $("qa-feedback").classList.add("hidden");
+
+  try {
+    const tentativeHistory = state.history.concat([{ question: state.currentQuestion, answer }]);
+    const r = await callGAS({ action: "nextTurn", payload: { studentInfo: state.studentInfo, history: tentativeHistory } });
+    if (!r.ok) throw new Error(r.error || "처리 실패");
+
+    if (r.status === "insincere") {
+      $("qa-feedback").textContent = r.feedback || "조금 더 구체적으로 답변해주세요.";
+      $("qa-feedback").classList.remove("hidden");
+      if (r.question) state.currentQuestion = r.question;
+      $("qa-question").textContent = state.currentQuestion;
+      // 답변은 기록에 반영하지 않고 다시 시도
+    } else if (r.status === "continue") {
+      state.history = tentativeHistory;
+      state.currentQuestion = r.question;
+      renderQuestion();
+    } else if (r.status === "ready") {
+      state.history = tentativeHistory;
+      await finalize();
+    }
+  } catch(e) {
+    showErr("qa-err", "서버 연결 오류: " + e.message);
+  } finally {
+    $("btn-submit-answer").disabled = false;
+    $("qa-loading").classList.add("hidden");
+  }
+});
+
+// ---------- 최종 평가 ----------
+async function finalize() {
+  $("screen-qa").classList.add("hidden");
+  $("screen-result").classList.remove("hidden");
+  $("result-status").textContent = "종합 평가 중입니다...";
+  $("result-letter").textContent = "";
+  $("result-badge").innerHTML = "";
+  $("btn-download").classList.add("hidden");
+  $("btn-send-email").classList.add("hidden");
+
+  try {
+    const r = await callGAS({ action: "finalize", payload: { studentInfo: state.studentInfo, history: state.history } });
+    if (!r.ok) throw new Error(r.error || "평가 실패");
+
+    state.finalizeAttempts++;
+
+    if (!r.passed && state.finalizeAttempts < state.MAX_FINALIZE_ATTEMPTS && state.history.length < 12) {
+      // 컷트라인 미달: 심화 질문을 한 번 더 진행
+      $("result-status").textContent = "반성이 조금 더 필요해 보여요. 질문을 이어갈게요.";
+      const nr = await callGAS({ action: "nextTurn", payload: { studentInfo: state.studentInfo, history: state.history, needsDeepen: true } });
+      if (nr.ok && nr.question) {
+        state.currentQuestion = nr.question;
+        $("screen-result").classList.add("hidden");
+        $("screen-qa").classList.remove("hidden");
+        renderQuestion();
+        return;
+      }
+    }
+
+    // 최종 확정
+    state.finalLetter = r.letter;
+    state.finalScore = r.score;
+    state.finalPassed = r.passed;
+
+    $("result-status").textContent = "";
+    $("result-badge").innerHTML = '<span class="score-badge ' + (r.passed ? "pass" : "fail") + '">반성 점수 ' + r.score + '점 · ' + (r.passed ? "통과" : "컷트라인 미달") + '</span>';
+    $("result-letter").textContent = r.letter;
+    $("btn-download").classList.remove("hidden");
+    $("btn-send-email").classList.remove("hidden");
+  } catch(e) {
+    $("result-status").textContent = "";
+    showErr("result-err", "서버 연결 오류: " + e.message);
+  }
+}
+
+// ---------- 텍스트 파일 다운로드 ----------
+$("btn-download").addEventListener("click", () => {
+  const blob = new Blob([state.finalLetter], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "반성문_" + state.studentInfo.studentId + "_" + state.studentInfo.name + "_" + state.studentInfo.date + ".txt";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+// ---------- 이메일 발송 ----------
+$("btn-send-email").addEventListener("click", async () => {
+  showErr("result-err", "");
+  $("btn-send-email").disabled = true;
+  $("result-status").textContent = "이메일 발송 중...";
+  try {
+    const r = await callGAS({
+      action: "sendEmail",
+      payload: {
+        studentInfo: state.studentInfo,
+        letter: state.finalLetter,
+        score: state.finalScore,
+        passed: state.finalPassed
+      }
+    });
+    if (!r.ok) throw new Error(r.error || "발송 실패");
+    $("result-status").textContent = "이메일이 발송되었습니다. (부모님 및 교사)";
+  } catch(e) {
+    $("result-status").textContent = "";
+    showErr("result-err", "이메일 발송 오류: " + e.message);
+  } finally {
+    $("btn-send-email").disabled = false;
+  }
+});
+</script>
+</body>
+</html>
