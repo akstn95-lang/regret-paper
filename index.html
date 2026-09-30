@@ -3,412 +3,733 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>반성문 작성 도우미</title>
+<title>성찰의 기록 · 반성문 작성</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --primary:#3a5a9c; --primary-dark:#2c4576; --bg:#f4f6fb; --card:#ffffff;
-    --text:#2a2f3a; --muted:#6b7280; --danger:#c0392b; --ok:#2f8f4e; --border:#e2e6ee;
+    --bg:#eef1ea;
+    --panel:#fffdf8;
+    --panel-2:#f7f4ec;
+    --ink:#263229;
+    --ink-soft:#5b6b60;
+    --ink-faint:#8b978c;
+    --thread:#9c3d3d;
+    --thread-soft:#d9b8b3;
+    --accent:#4d6a5a;
+    --accent-soft:#dfe7de;
+    --line:#d8d3c4;
+    --danger:#a13d3d;
+    --danger-bg:#f7e9e7;
+    --ok:#4d6a5a;
+    --ok-bg:#e6ede4;
+    --shadow: 0 10px 30px rgba(38,50,41,0.08);
   }
   *{box-sizing:border-box;}
-  body{
-    margin:0; font-family:"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-    background:var(--bg); color:var(--text); min-height:100vh;
-    display:flex; justify-content:center; padding:32px 16px;
+  body{margin:0;}
+  html,body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Noto Sans KR',sans-serif;
+    -webkit-font-smoothing:antialiased;
   }
-  .app{width:100%; max-width:640px;}
-  .card{
-    background:var(--card); border-radius:16px; padding:28px 26px;
-    box-shadow:0 4px 24px rgba(30,40,80,0.08); margin-bottom:18px;
+  h1,h2,h3,.serif{font-family:'Noto Serif KR',serif;}
+  .wrap{
+    max-width:720px;
+    margin:0 auto;
+    padding:36px 20px 80px;
   }
-  h1{font-size:22px; margin:0 0 6px;}
-  h2{font-size:17px; margin:0 0 14px; color:var(--primary-dark);}
-  p.desc{color:var(--muted); font-size:14px; margin:0 0 20px; line-height:1.6;}
-  label{display:block; font-size:14px; font-weight:600; margin:14px 0 6px;}
-  input[type=text], input[type=email], input[type=date], input[type=password], textarea{
-    width:100%; padding:11px 13px; border:1px solid var(--border); border-radius:10px;
-    font-size:15px; font-family:inherit; background:#fbfcff;
+  header.app-header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:28px;
   }
-  textarea{resize:vertical; min-height:110px; line-height:1.5;}
-  input:focus, textarea:focus{outline:none; border-color:var(--primary);}
-  .hint{font-size:12.5px; color:var(--muted); margin-top:4px;}
-  .err{font-size:13px; color:var(--danger); margin-top:6px; display:none;}
-  .btn{
-    display:inline-block; padding:12px 22px; border:none; border-radius:10px;
-    background:var(--primary); color:#fff; font-size:15px; font-weight:600;
-    cursor:pointer; margin-top:18px;
+  header.app-header .title{
+    font-size:22px;
+    font-weight:600;
+    letter-spacing:-0.01em;
   }
-  .btn:hover{background:var(--primary-dark);}
-  .btn.secondary{background:#eef1f8; color:var(--primary-dark);}
-  .btn.secondary:hover{background:#dfe4f3;}
-  .btn:disabled{opacity:0.5; cursor:not-allowed;}
-  .btn-row{display:flex; gap:10px; flex-wrap:wrap;}
-  .toggle-link{
-    font-size:13px; color:var(--muted); text-decoration:underline; cursor:pointer;
-    display:inline-block; margin-top:10px;
+  header.app-header .title small{
+    display:block;
+    font-family:'Noto Sans KR',sans-serif;
+    font-size:12.5px;
+    font-weight:400;
+    color:var(--ink-soft);
+    margin-top:4px;
+    letter-spacing:0;
   }
-  .hidden{display:none !important;}
-  .progress{font-size:13px; color:var(--muted); margin-bottom:12px;}
-  .question-box{
-    background:#eef2fb; border-left:4px solid var(--primary); border-radius:8px;
-    padding:14px 16px; margin-bottom:16px; font-size:15px; line-height:1.6;
+  .gear-btn{
+    background:none;
+    border:1px solid var(--line);
+    color:var(--ink-soft);
+    width:36px;height:36px;
+    border-radius:50%;
+    cursor:pointer;
+    font-size:16px;
+    display:flex;align-items:center;justify-content:center;
+    transition:.15s;
   }
+  .gear-btn:hover{background:var(--panel-2);color:var(--ink);}
+
+  .panel{
+    background:var(--panel);
+    border-radius:14px;
+    box-shadow:var(--shadow);
+    padding:28px 26px;
+    border:1px solid #eae5d8;
+  }
+  .panel + .panel{margin-top:16px;}
+
+  /* settings */
+  #settingsPanel{display:none;margin-bottom:16px;}
+  #settingsPanel h3{margin:0 0 14px;font-size:15px;color:var(--ink);}
+  .field-row{margin-bottom:14px;}
+  .field-row label{
+    display:block;font-size:12.5px;color:var(--ink-soft);
+    margin-bottom:6px;font-weight:500;
+  }
+  .hint{font-size:11.5px;color:var(--ink-faint);margin-top:5px;line-height:1.5;}
+  input[type=text],input[type=password],input[type=date],input[type=number],input[type=email],textarea{
+    width:100%;
+    font-family:'Noto Sans KR',sans-serif;
+    font-size:14.5px;
+    padding:11px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:#fff;
+    color:var(--ink);
+    outline:none;
+    transition:.15s;
+  }
+  input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+  textarea{resize:vertical;line-height:1.6;}
+  .settings-actions{display:flex;gap:8px;margin-top:16px;}
+
+  button.btn{
+    font-family:'Noto Sans KR',sans-serif;
+    font-size:14px;font-weight:600;
+    padding:11px 18px;
+    border-radius:8px;
+    border:none;
+    cursor:pointer;
+    transition:.15s;
+  }
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{background:#3d5748;}
+  .btn-primary:disabled{background:#bcc7bf;cursor:not-allowed;}
+  .btn-ghost{background:none;border:1px solid var(--line);color:var(--ink-soft);}
+  .btn-ghost:hover{background:var(--panel-2);}
+  .btn-danger-ghost{background:none;border:1px solid var(--thread-soft);color:var(--danger);}
+  .btn-danger-ghost:hover{background:var(--danger-bg);}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px;}
+
+  /* stitch progress */
+  .stitch-wrap{margin-bottom:24px;}
+  .stitch-caption{
+    display:flex;justify-content:space-between;
+    font-size:11.5px;color:var(--ink-faint);margin-top:6px;
+  }
+
+  /* step titles */
+  .step-eyebrow{
+    font-size:12px;color:var(--thread);font-weight:600;
+    letter-spacing:.04em;margin-bottom:6px;
+  }
+  .step-title{font-size:19px;font-weight:600;margin:0 0 10px;line-height:1.4;}
+  .step-desc{font-size:13.5px;color:var(--ink-soft);line-height:1.65;margin-bottom:18px;}
+
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .info-grid .full{grid-column:1/-1;}
+  @media(max-width:520px){.info-grid{grid-template-columns:1fr;}}
+
+  textarea.answer-box{min-height:150px;}
+  .char-count{font-size:11px;color:var(--ink-faint);text-align:right;margin-top:5px;}
+
   .feedback-box{
-    background:#fff4e9; border-left:4px solid #d98324; border-radius:8px;
-    padding:12px 15px; margin-bottom:14px; font-size:14px; line-height:1.6; color:#8a5a1e;
+    margin-top:14px;padding:14px 16px;border-radius:10px;
+    font-size:13.5px;line-height:1.65;display:none;
   }
-  .history{margin-top:20px;}
-  .history-item{padding:10px 0; border-bottom:1px solid var(--border); font-size:13.5px;}
-  .history-item .q{color:var(--primary-dark); font-weight:600; margin-bottom:4px;}
-  .history-item .a{color:var(--text);}
-  .letter-box{
-    white-space:pre-wrap; background:#fbfcff; border:1px solid var(--border);
-    border-radius:10px; padding:18px; font-size:14.5px; line-height:1.75; max-height:480px;
-    overflow-y:auto;
+  .feedback-box.retry{background:var(--danger-bg);color:#7a3030;border:1px solid #ecc9c4;}
+  .feedback-box.pass{background:var(--ok-bg);color:#31473a;border:1px solid #c9d8c9;}
+
+  .loading-line{
+    display:none;align-items:center;gap:8px;
+    font-size:13px;color:var(--ink-soft);margin-top:12px;
   }
-  .score-badge{
-    display:inline-block; padding:6px 14px; border-radius:999px; font-weight:700; font-size:14px;
-    margin-bottom:14px;
-  }
-  .score-badge.pass{background:#e5f6ea; color:var(--ok);}
-  .score-badge.fail{background:#fdeceb; color:var(--danger);}
   .spinner{
-    display:inline-block; width:16px; height:16px; border:2px solid #cbd5f0;
-    border-top-color:var(--primary); border-radius:50%; animation:spin 0.7s linear infinite;
-    vertical-align:middle; margin-right:8px;
+    width:14px;height:14px;border-radius:50%;
+    border:2px solid var(--line);border-top-color:var(--thread);
+    animation:spin .8s linear infinite;
   }
   @keyframes spin{to{transform:rotate(360deg);}}
-  .status-line{font-size:13.5px; color:var(--muted); margin-top:10px;}
-  .admin-panel{border:1px dashed var(--border); border-radius:10px; padding:16px; margin-top:14px; background:#fafbff;}
-  .footer-note{font-size:12px; color:var(--muted); text-align:center; margin-top:6px;}
+
+  /* intro */
+  .intro-note{
+    background:var(--panel-2);border-left:3px solid var(--accent);
+    padding:14px 16px;border-radius:0 8px 8px 0;
+    font-size:13.5px;color:var(--ink-soft);line-height:1.7;margin-bottom:20px;
+  }
+
+  /* review screen */
+  .qa-list{display:flex;flex-direction:column;gap:10px;margin:18px 0;}
+  .qa-item{
+    border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+    display:flex;justify-content:space-between;align-items:center;gap:12px;
+    cursor:pointer;background:#fff;
+  }
+  .qa-item:hover{border-color:var(--accent);}
+  .qa-item .qi-left{min-width:0;}
+  .qa-item .qi-title{font-size:13.5px;font-weight:600;margin-bottom:3px;}
+  .qa-item .qi-preview{font-size:12px;color:var(--ink-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px;}
+  .qi-score{font-size:12px;font-weight:700;padding:4px 9px;border-radius:20px;white-space:nowrap;}
+  .qi-score.low{background:var(--danger-bg);color:var(--danger);}
+  .qi-score.high{background:var(--ok-bg);color:var(--ok);}
+
+  .score-summary{
+    display:flex;align-items:baseline;gap:10px;margin:6px 0 4px;
+  }
+  .score-summary .num{font-size:34px;font-weight:700;font-family:'Noto Serif KR',serif;}
+  .score-summary .cut{font-size:13px;color:var(--ink-faint);}
+  .cutoff-status{font-size:13.5px;margin-top:6px;font-weight:600;}
+  .cutoff-status.pass{color:var(--ok);}
+  .cutoff-status.fail{color:var(--danger);}
+
+  /* result letter */
+  .letter-paper{
+    background:#fffefb;
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:34px 30px;
+    box-shadow: inset 0 0 0 1px #fff, var(--shadow);
+    position:relative;
+  }
+  .letter-paper textarea{
+    width:100%;min-height:420px;border:none;background:none;
+    font-family:'Noto Serif KR',serif;font-size:15px;line-height:2;
+    resize:vertical;padding:0;
+  }
+  .letter-paper textarea:focus{box-shadow:none;}
+
+  .email-block{margin-top:18px;}
+  .email-note{font-size:12px;color:var(--ink-faint);margin-top:8px;line-height:1.6;}
+
+  footer.mini{text-align:center;font-size:11.5px;color:var(--ink-faint);margin-top:34px;}
+
+  .resume-banner{
+    background:var(--panel-2);border:1px solid var(--line);border-radius:10px;
+    padding:14px 16px;margin-bottom:16px;font-size:13.5px;color:var(--ink-soft);
+    display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+  }
+  .config-banner{
+    background:var(--danger-bg);border:1px solid #ecc9c4;border-radius:10px;
+    padding:14px 16px;margin-bottom:16px;font-size:13px;color:#7a3030;line-height:1.7;
+  }
 </style>
 </head>
 <body>
-<div class="app">
+<div class="wrap">
 
-  <!-- ============ 화면 1: 기본 정보 입력 ============ -->
-  <div class="card" id="screen-start">
-    <h1>반성문 작성 도우미</h1>
-    <p class="desc">아래 정보를 입력한 뒤, 이어지는 질문에 솔직하고 구체적으로 답해주세요.
-    성의 없이 짧게 답하면 다음 질문으로 넘어가지 않아요.</p>
-
-    <label for="in-date">날짜</label>
-    <input type="date" id="in-date">
-
-    <label for="in-sid">학번 (4자리)</label>
-    <input type="text" id="in-sid" maxlength="4" placeholder="예: 1203" inputmode="numeric">
-
-    <label for="in-name">이름</label>
-    <input type="text" id="in-name" placeholder="예: 홍길동">
-
-    <label for="in-pemail">부모님 이메일</label>
-    <input type="email" id="in-pemail" placeholder="예: parent@example.com">
-
-    <div class="err" id="start-err"></div>
-    <button class="btn" id="btn-start">시작하기</button>
-
-    <div>
-      <span class="toggle-link" id="toggle-admin">관리자(교사) 설정 열기</span>
+  <header class="app-header">
+    <div class="title">성찰의 기록
+      <small>스스로를 돌아보는 시간 · 반성문 작성 도우미</small>
     </div>
+    <button class="gear-btn" id="gearBtn" title="설정">⚙</button>
+  </header>
 
-    <div class="admin-panel hidden" id="admin-panel">
-      <label for="admin-pw">관리자 비밀번호</label>
-      <input type="password" id="admin-pw" placeholder="비밀번호 입력">
-      <div class="btn-row">
-        <button class="btn secondary" id="btn-admin-load">현재 컷트라인 확인</button>
-      </div>
-      <div id="admin-current" class="status-line"></div>
-      <label for="admin-cutoff">반성 점수 컷트라인 (0~100)</label>
-      <input type="text" id="admin-cutoff" placeholder="예: 70" inputmode="numeric">
-      <div class="btn-row">
-        <button class="btn" id="btn-admin-save">컷트라인 저장</button>
-      </div>
-      <div class="err" id="admin-err"></div>
-      <div class="status-line" id="admin-status"></div>
+  <div id="configBanner" class="config-banner" style="display:none;">
+    이 앱은 Google Apps Script 웹앱을 통해 AI 평가와 이메일 발송을 처리하도록 되어 있는데, 아직 코드 상단의 <code>GAS_URL</code> 값이 채워지지 않았습니다. 함께 전달된 "이메일발송_GAS_설정방법" 안내를 참고해 GAS 웹앱을 배포하고, 이 파일의 <code>GAS_URL</code> 상수에 배포 주소를 붙여넣은 뒤 사용해주세요.
+  </div>
+
+  <div id="settingsPanel" class="panel">
+    <h3>설정 (교사용)</h3>
+    <div class="field-row">
+      <label>반성 점수 컷트라인 (0~100)</label>
+      <input type="number" id="cutoffInput" min="0" max="100" placeholder="70">
+      <div class="hint">8개 질문 점수의 평균이 이 점수 이상이어야 반성문이 최종 완성됩니다. "저장"을 누르기 전까지는 이전 값이 그대로 유지됩니다.</div>
+    </div>
+    <div class="hint" style="margin-bottom:14px;">Claude API 키와 이메일 발송 주소는 이제 이 화면에서 입력하지 않습니다. Google Apps Script 쪽 스크립트 속성(CLAUDE_API_KEY)과 이 파일 코드 상단의 GAS_URL 값에 한 번만 등록해두면, 이후로는 다시 입력할 필요가 없습니다. 자세한 방법은 함께 전달된 안내 파일을 확인해주세요.</div>
+    <div class="settings-actions">
+      <button class="btn btn-primary" id="saveSettingsBtn">저장</button>
+      <button class="btn btn-danger-ghost" id="clearAllBtn">작성 중인 내용 초기화</button>
     </div>
   </div>
 
-  <!-- ============ 화면 2: 질문/답변 ============ -->
-  <div class="card hidden" id="screen-qa">
-    <h2>스스로를 돌아보는 질문</h2>
-    <div class="progress" id="qa-progress"></div>
-    <div class="feedback-box hidden" id="qa-feedback"></div>
-    <div class="question-box" id="qa-question"></div>
-    <textarea id="qa-answer" placeholder="솔직하고 구체적으로 답변해주세요."></textarea>
-    <div class="err" id="qa-err"></div>
-    <button class="btn" id="btn-submit-answer">답변 제출</button>
-    <div class="status-line hidden" id="qa-loading"><span class="spinner"></span>확인하고 있어요...</div>
-
-    <div class="history" id="qa-history"></div>
-  </div>
-
-  <!-- ============ 화면 3: 결과 ============ -->
-  <div class="card hidden" id="screen-result">
-    <h2>반성문 완성</h2>
-    <div id="result-badge"></div>
-    <div class="letter-box" id="result-letter"></div>
-    <div class="btn-row">
-      <button class="btn secondary" id="btn-download">텍스트 파일로 저장</button>
-      <button class="btn" id="btn-send-email">이메일로 발송</button>
+  <div id="resumeBanner" class="resume-banner" style="display:none;">
+    <span>이전에 작성하던 내용이 있습니다. 이어서 작성할까요?</span>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost" id="discardResumeBtn">새로 시작</button>
+      <button class="btn btn-primary" id="resumeBtn">이어서 작성</button>
     </div>
-    <div class="err" id="result-err"></div>
-    <div class="status-line" id="result-status"></div>
   </div>
 
-  <p class="footer-note">본 도구는 학생의 진솔한 반성을 돕기 위한 것입니다. 작성된 내용은 교사와 부모님께 전달됩니다.</p>
+  <div class="panel" id="mainPanel"></div>
+
+  <footer class="mini">이 활동은 벌이 아니라, 스스로를 돌아보고 다시 시작하기 위한 시간입니다.</footer>
 </div>
 
 <script>
-/* ============================================================
-   설정: 배포한 GAS 웹 앱 URL을 아래에 붙여넣으세요.
-   예: https://script.google.com/macros/s/AKfycb.../exec
-============================================================ */
-const CONFIG = {
-  GAS_URL: "https://script.google.com/macros/s/AKfycbxd_kwSY5ROVv-KINFnXFU-XmtVTYpv3h5H89eIqejIeZCqtGvXwZG7jFyz2N-7zmRW9w/exec"
-};
+/* ================================================================
+   여기에 배포한 GAS(Google Apps Script) 웹앱 주소를 붙여넣으세요.
+   (AI 평가/반성문 생성 + 이메일 발송을 모두 이 주소 하나로 처리합니다)
+   ================================================================ */
+const GAS_URL = 'PASTE_YOUR_GAS_WEB_APP_URL_HERE';
 
-// ---------- 공통 통신 함수 ----------
-// GAS 웹 앱과의 CORS preflight 문제를 피하기 위해 text/plain으로 전송하고,
-// 서버(doPost)에서 JSON.parse로 그대로 파싱합니다.
-async function callGAS(body) {
-  const res = await fetch(CONFIG.GAS_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify(body)
+function isConfigured(){
+  return typeof GAS_URL === 'string' && /^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(GAS_URL.trim());
+}
+
+/* ---------------- 설정 / 상태 저장 ---------------- */
+const LS_KEY_STATE = 'bsm_state_v1';
+const LS_KEY_CUTOFF = 'bsm_cutoff';
+
+function getCutoff(){ const v = parseInt(localStorage.getItem(LS_KEY_CUTOFF)); return isNaN(v) ? 70 : v; }
+
+document.getElementById('configBanner').style.display = isConfigured() ? 'none' : 'block';
+
+const gearBtn = document.getElementById('gearBtn');
+const settingsPanel = document.getElementById('settingsPanel');
+gearBtn.addEventListener('click', ()=>{
+  settingsPanel.style.display = settingsPanel.style.display === 'none' ? 'block' : 'none';
+  document.getElementById('cutoffInput').value = getCutoff();
+});
+document.getElementById('saveSettingsBtn').addEventListener('click', ()=>{
+  const c = parseInt(document.getElementById('cutoffInput').value);
+  localStorage.setItem(LS_KEY_CUTOFF, isNaN(c) ? 70 : Math.max(0,Math.min(100,c)));
+  settingsPanel.style.display = 'none';
+  render();
+});
+document.getElementById('clearAllBtn').addEventListener('click', ()=>{
+  if(confirm('현재 작성 중인 반성문 내용이 모두 삭제됩니다. 계속할까요?')){
+    localStorage.removeItem(LS_KEY_STATE);
+    location.reload();
+  }
+});
+
+/* ---------------- 질문 세트 ---------------- */
+const QUESTIONS = [
+  {key:'q1', eyebrow:'1 / 8', title:'있었던 일', question:'어떤 일이 있었는지, 있었던 사실을 있는 그대로 적어주세요. (언제, 어디서, 누구와, 무슨 일이 있었나요?)',
+   intent:'사실관계를 회피하거나 축소하지 않고 있는 그대로 서술하는지 확인합니다.'},
+  {key:'q2', eyebrow:'2 / 8', title:'그때의 생각', question:'그 행동을 하기 직전 또는 하는 동안, 어떤 생각이나 감정이 있었나요?',
+   intent:'자기 행동의 동기를 스스로 들여다보는지 확인합니다. "몰랐다", "그냥 그랬다"처럼 회피하는 답은 통과시키지 않습니다.'},
+  {key:'q3', eyebrow:'3 / 8', title:'잘못에 대한 인식', question:'지금 돌아봤을 때, 이 행동의 어떤 부분이 잘못되었다고 생각하나요? 구체적으로 적어주세요.',
+   intent:'남 탓이나 정당화가 아니라 자신의 행동에서 잘못된 지점을 스스로 짚어내는지 확인합니다.'},
+  {key:'q4', eyebrow:'4 / 8', title:'영향을 받은 사람', question:'이 일로 인해 마음이 상하거나 피해를 입은 사람은 누구이고, 그 사람은 어떤 마음이었을지 적어주세요.',
+   intent:'타인의 입장에서 생각해보는 공감이 담겨 있는지 확인합니다.'},
+  {key:'q5', eyebrow:'5 / 8', title:'다르게 행동했다면', question:'그때로 돌아간다면, 어떻게 다르게 행동했을지 구체적으로 적어주세요.',
+   intent:'추상적인 다짐이 아니라 실제로 실천 가능한 대안 행동을 제시하는지 확인합니다.'},
+  {key:'q6', eyebrow:'6 / 8', title:'배운 점', question:'이번 일을 겪으며 스스로에 대해, 혹은 관계에 대해 새롭게 깨닫거나 배운 점이 있다면 적어주세요.',
+   intent:'형식적인 답이 아니라 스스로의 언어로 깨달음을 표현하는지 확인합니다.'},
+  {key:'q7', eyebrow:'7 / 8', title:'앞으로의 다짐', question:'앞으로 비슷한 상황이 생긴다면 어떻게 하고 싶은지, 구체적인 다짐을 적어주세요.',
+   intent:'막연한 "안 하겠다"가 아니라 실천 가능한 구체적 다짐인지 확인합니다.'},
+  {key:'q8', eyebrow:'8 / 8', title:'전하고 싶은 말', question:'피해를 입은 사람, 선생님, 부모님 중 마음을 전하고 싶은 대상에게 하고 싶은 말을 적어주세요.',
+   intent:'형식적인 사과가 아니라 진심이 담긴 표현인지 확인합니다.'},
+];
+
+/* ---------------- 상태 ---------------- */
+function freshState(){
+  return {
+    step:'info', // info | q0..q7 | review | result
+    date: new Date().toISOString().slice(0,10),
+    studentId:'', name:'', parentEmail:'',
+    answers: QUESTIONS.map(()=>({text:'', score:null, feedback:'', pass:false})),
+    currentQ:0,
+    finalLetter:''
+  };
+}
+let state = null;
+
+function loadSavedState(){
+  try{
+    const raw = localStorage.getItem(LS_KEY_STATE);
+    if(!raw) return null;
+    return JSON.parse(raw);
+  }catch(e){ return null; }
+}
+function saveState(){
+  try{ localStorage.setItem(LS_KEY_STATE, JSON.stringify(state)); }catch(e){}
+}
+
+const saved = loadSavedState();
+if(saved && (saved.studentId || saved.answers.some(a=>a.text))){
+  document.getElementById('resumeBanner').style.display = 'flex';
+  state = freshState();
+}else{
+  state = freshState();
+}
+document.getElementById('resumeBtn').addEventListener('click', ()=>{
+  state = saved;
+  document.getElementById('resumeBanner').style.display='none';
+  render();
+});
+document.getElementById('discardResumeBtn').addEventListener('click', ()=>{
+  localStorage.removeItem(LS_KEY_STATE);
+  document.getElementById('resumeBanner').style.display='none';
+  state = freshState();
+  render();
+});
+
+/* ---------------- GAS 웹앱 호출 (Claude 평가/생성 + 이메일 발송) ---------------- */
+async function callGas(payload){
+  if(!isConfigured()){
+    throw new Error('GAS_URL이 아직 설정되지 않았습니다. 코드 상단의 GAS_URL 값을 배포한 웹앱 주소로 바꿔주세요.');
+  }
+  const resp = await fetch(GAS_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify(payload)
   });
-  if (!res.ok) throw new Error("서버 응답 오류: " + res.status);
-  return res.json();
-}
-
-// ---------- 상태 ----------
-let state = {
-  studentInfo: { date: "", studentId: "", name: "", parentEmail: "" },
-  history: [],       // [{question, answer}]
-  currentQuestion: "",
-  finalizeAttempts: 0,
-  MAX_FINALIZE_ATTEMPTS: 3
-};
-
-// ---------- 유틸 ----------
-function $(id){ return document.getElementById(id); }
-function showErr(id, msg){ const el=$(id); el.textContent = msg; el.style.display = msg ? "block" : "none"; }
-function todayStr(){
-  const d = new Date();
-  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
-}
-$("in-date").value = todayStr();
-
-// ---------- 관리자 패널 토글 ----------
-$("toggle-admin").addEventListener("click", () => {
-  $("admin-panel").classList.toggle("hidden");
-});
-
-$("btn-admin-load").addEventListener("click", async () => {
-  showErr("admin-err", "");
-  const pw = $("admin-pw").value;
-  if (!pw) { showErr("admin-err", "비밀번호를 입력해주세요."); return; }
-  $("admin-current").textContent = "확인 중...";
-  try {
-    const r = await callGAS({ action: "getCutoff", password: pw });
-    if (!r.ok) { showErr("admin-err", r.error || "비밀번호가 올바르지 않습니다."); $("admin-current").textContent=""; return; }
-    $("admin-current").textContent = "현재 컷트라인: " + r.cutoff + "점";
-    $("admin-cutoff").value = r.cutoff;
-  } catch(e) {
-    showErr("admin-err", "서버 연결 오류: " + e.message);
-    $("admin-current").textContent = "";
+  const data = await resp.json().catch(()=>null);
+  if(!data){
+    throw new Error('서버 응답을 해석할 수 없습니다.');
   }
-});
-
-$("btn-admin-save").addEventListener("click", async () => {
-  showErr("admin-err", "");
-  $("admin-status").textContent = "";
-  const pw = $("admin-pw").value;
-  const cutoff = $("admin-cutoff").value;
-  if (!pw) { showErr("admin-err", "비밀번호를 입력해주세요."); return; }
-  if (!/^\d+$/.test(cutoff) || Number(cutoff) < 0 || Number(cutoff) > 100) {
-    showErr("admin-err", "컷트라인은 0~100 사이의 숫자로 입력해주세요."); return;
+  if(!data.success){
+    throw new Error(data.error || '요청이 실패했습니다.');
   }
-  try {
-    const r = await callGAS({ action: "setCutoff", password: pw, cutoff: Number(cutoff) });
-    if (!r.ok) { showErr("admin-err", r.error || "저장 실패"); return; }
-    $("admin-status").textContent = "저장되었습니다. (컷트라인: " + r.cutoff + "점)";
-  } catch(e) {
-    showErr("admin-err", "서버 연결 오류: " + e.message);
-  }
-});
-
-// ---------- 화면 1 -> 시작 ----------
-$("btn-start").addEventListener("click", async () => {
-  showErr("start-err", "");
-  const date = $("in-date").value;
-  const sid = $("in-sid").value.trim();
-  const name = $("in-name").value.trim();
-  const pemail = $("in-pemail").value.trim();
-
-  if (!date) return showErr("start-err", "날짜를 입력해주세요.");
-  if (!/^\d{4}$/.test(sid)) return showErr("start-err", "학번은 숫자 4자리로 입력해주세요.");
-  if (!name) return showErr("start-err", "이름을 입력해주세요.");
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(pemail)) return showErr("start-err", "부모님 이메일 형식을 확인해주세요.");
-
-  state.studentInfo = { date, studentId: sid, name, parentEmail: pemail };
-
-  $("btn-start").disabled = true;
-  $("btn-start").textContent = "질문 준비 중...";
-  try {
-    const r = await callGAS({ action: "nextTurn", payload: { studentInfo: state.studentInfo, history: [] } });
-    if (!r.ok) throw new Error(r.error || "질문 생성 실패");
-    state.currentQuestion = r.question;
-    $("screen-start").classList.add("hidden");
-    $("screen-qa").classList.remove("hidden");
-    renderQuestion();
-  } catch(e) {
-    showErr("start-err", "서버 연결 오류: " + e.message + " (GAS_URL 설정을 확인해주세요)");
-  } finally {
-    $("btn-start").disabled = false;
-    $("btn-start").textContent = "시작하기";
-  }
-});
-
-// ---------- 화면 2: 질문/답변 렌더링 ----------
-function renderQuestion() {
-  $("qa-question").textContent = state.currentQuestion;
-  $("qa-progress").textContent = "지금까지 성실하게 답변한 횟수: " + state.history.length + "개";
-  $("qa-answer").value = "";
-  renderHistory();
+  return data;
 }
 
-function renderHistory() {
-  const box = $("qa-history");
-  box.innerHTML = "";
-  state.history.forEach(item => {
-    const div = document.createElement("div");
-    div.className = "history-item";
-    div.innerHTML = '<div class="q">Q. ' + escapeHtml(item.question) + '</div><div class="a">A. ' + escapeHtml(item.answer) + '</div>';
-    box.appendChild(div);
-  });
+async function callClaude(promptText){
+  const data = await callGas({ action:'claude', prompt: promptText });
+  return data.text || '';
+}
+function extractJson(raw){
+  let t = raw.trim();
+  t = t.replace(/^```json/i,'').replace(/^```/,'').replace(/```$/,'').trim();
+  const start = t.indexOf('{');
+  const end = t.lastIndexOf('}');
+  if(start === -1 || end === -1) throw new Error('응답 형식을 해석할 수 없습니다.');
+  return JSON.parse(t.slice(start, end+1));
 }
 
-function escapeHtml(s){
-  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+async function evaluateAnswer(qIndex, answerText){
+  const q = QUESTIONS[qIndex];
+  const prompt =
+`당신은 학생 생활지도를 돕는 성찰 지도 도우미입니다. 학생이 자신의 잘못된 행동을 돌아보며 반성문을 작성하는 중이며, 아래는 그 중 한 단계의 질문과 학생의 답변입니다.
+
+[이 단계의 의도]
+${q.intent}
+
+[질문]
+${q.question}
+
+[학생 답변]
+${answerText}
+
+다음 기준으로 이 답변을 평가하세요.
+1) 진정성 - 성의 없이 회피하거나, 장난스럽거나, 남 탓만 하거나, 지나치게 짧고 형식적인 답변이 아닌지
+2) 구체성 - 추상적인 말만 나열하지 않고 실제 상황에 맞는 구체적인 내용이 담겨 있는지
+3) 이 단계의 질문 의도에 실제로 답하고 있는지
+
+반드시 아래 JSON 형식으로만 답하세요. 다른 설명이나 문장을 앞뒤에 절대 추가하지 마세요.
+{"pass": true 또는 false, "score": 0~100 사이 정수, "feedback": "학생에게 보여줄 부드럽고 다정하지만 분명한 안내 메시지. 통과하지 못했다면 무엇을 더 채워야 하는지 구체적으로 알려주고, 통과했다면 짧게 격려하는 말. 2~3문장, 존댓말."}`;
+  const raw = await callClaude(prompt);
+  return extractJson(raw);
 }
 
-$("btn-submit-answer").addEventListener("click", async () => {
-  showErr("qa-err", "");
-  const answer = $("qa-answer").value.trim();
-  if (answer.length < 2) return showErr("qa-err", "답변을 입력해주세요.");
+async function composeFinalLetter(){
+  const qaText = QUESTIONS.map((q,i)=>`[${q.title}]\n질문: ${q.question}\n답변: ${state.answers[i].text}`).join('\n\n');
+  const prompt =
+`다음은 한 학생이 자신의 잘못에 대해 성찰하며 작성한 8단계 질문과 답변입니다. 이 내용을 바탕으로 정식 반성문 형식의 글을 작성하세요.
 
-  $("btn-submit-answer").disabled = true;
-  $("qa-loading").classList.remove("hidden");
-  $("qa-feedback").classList.add("hidden");
+[학생 정보]
+작성일: ${state.date}
+학번: ${state.studentId}
+이름: ${state.name}
 
-  try {
-    const tentativeHistory = state.history.concat([{ question: state.currentQuestion, answer }]);
-    const r = await callGAS({ action: "nextTurn", payload: { studentInfo: state.studentInfo, history: tentativeHistory } });
-    if (!r.ok) throw new Error(r.error || "처리 실패");
+[질문과 답변]
+${qaText}
 
-    if (r.status === "insincere") {
-      $("qa-feedback").textContent = r.feedback || "조금 더 구체적으로 답변해주세요.";
-      $("qa-feedback").classList.remove("hidden");
-      if (r.question) state.currentQuestion = r.question;
-      $("qa-question").textContent = state.currentQuestion;
-      // 답변은 기록에 반영하지 않고 다시 시도
-    } else if (r.status === "continue") {
-      state.history = tentativeHistory;
-      state.currentQuestion = r.question;
-      renderQuestion();
-    } else if (r.status === "ready") {
-      state.history = tentativeHistory;
-      await finalize();
+작성 지침:
+- 학생이 실제로 답변한 내용과 표현, 어조를 최대한 존중하여 자연스럽게 이어지는 하나의 글로 정리하세요. 학생이 말하지 않은 내용을 지어내지 마세요.
+- 구성: 제목("반성문"), 작성일·학번·이름, 본문(있었던 일 → 잘못에 대한 인식 → 피해를 준 사람에 대한 공감 → 앞으로의 다짐), 마지막 다짐의 말과 이름으로 마무리.
+- 문체는 정중하고 진지한 존댓말/평서형으로 작성하세요.
+- 분량은 800~1200자 내외로 작성하세요.
+- 반드시 반성문 본문 텍스트만 출력하고, 그 외의 설명이나 안내 문구는 절대 덧붙이지 마세요.`;
+  return (await callClaude(prompt)).trim();
+}
+
+/* ---------------- 렌더링 ---------------- */
+const mainPanel = document.getElementById('mainPanel');
+
+function stitchSvg(current, total){
+  const w = 640, h = 40, pad = 20;
+  const step = (w - pad*2) / (total-1);
+  let dots = '';
+  for(let i=0;i<total;i++){
+    const x = pad + i*step;
+    const done = i < current;
+    const active = i === current;
+    const color = done ? 'var(--thread)' : (active ? 'var(--accent)' : 'var(--line)');
+    const r = active ? 6 : 4.5;
+    dots += `<circle cx="${x}" cy="20" r="${r}" fill="${color}"></circle>`;
+    if(i < total-1){
+      const nx = pad + (i+1)*step;
+      const lineColor = done ? 'var(--thread-soft)' : 'var(--line)';
+      dots += `<line x1="${x}" y1="20" x2="${nx}" y2="20" stroke="${lineColor}" stroke-width="2" stroke-dasharray="${done?'0':'3,4'}"></line>`;
     }
-  } catch(e) {
-    showErr("qa-err", "서버 연결 오류: " + e.message);
-  } finally {
-    $("btn-submit-answer").disabled = false;
-    $("qa-loading").classList.add("hidden");
   }
-});
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" style="display:block;overflow:visible;">${dots}</svg>`;
+}
 
-// ---------- 최종 평가 ----------
-async function finalize() {
-  $("screen-qa").classList.add("hidden");
-  $("screen-result").classList.remove("hidden");
-  $("result-status").textContent = "종합 평가 중입니다...";
-  $("result-letter").textContent = "";
-  $("result-badge").innerHTML = "";
-  $("btn-download").classList.add("hidden");
-  $("btn-send-email").classList.add("hidden");
+function render(){
+  const s = state.step;
+  if(s === 'info') return renderInfo();
+  if(s.startsWith('q')) return renderQuestion(parseInt(s.slice(1)));
+  if(s === 'review') return renderReview();
+  if(s === 'result') return renderResult();
+}
 
-  try {
-    const r = await callGAS({ action: "finalize", payload: { studentInfo: state.studentInfo, history: state.history } });
-    if (!r.ok) throw new Error(r.error || "평가 실패");
+function renderInfo(){
+  mainPanel.innerHTML = `
+    <div class="step-eyebrow">시작하기 전에</div>
+    <h2 class="step-title">먼저 기본 정보를 입력해주세요</h2>
+    <div class="intro-note">이 활동은 벌이 아니라, 있었던 일을 스스로 돌아보고 앞으로를 다짐하는 시간입니다. 솔직하고 구체적으로 적을수록 이 과정은 더 빨리, 더 의미 있게 끝납니다.</div>
+    <div class="info-grid">
+      <div class="field-row">
+        <label>날짜</label>
+        <input type="date" id="f_date" value="${state.date}">
+      </div>
+      <div class="field-row">
+        <label>학번 (4자리)</label>
+        <input type="text" id="f_sid" maxlength="4" inputmode="numeric" placeholder="예: 1203" value="${state.studentId}">
+      </div>
+      <div class="field-row full">
+        <label>이름</label>
+        <input type="text" id="f_name" placeholder="이름을 입력하세요" value="${state.name}">
+      </div>
+      <div class="field-row full">
+        <label>이메일 (부모님)</label>
+        <input type="email" id="f_email" placeholder="parent@example.com" value="${state.parentEmail}">
+      </div>
+    </div>
+    <div id="infoError" style="color:var(--danger);font-size:13px;display:none;margin-top:4px;"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="startBtn">성찰 질문 시작하기</button>
+    </div>
+  `;
+  document.getElementById('startBtn').addEventListener('click', ()=>{
+    const date = document.getElementById('f_date').value;
+    const sid = document.getElementById('f_sid').value.trim();
+    const name = document.getElementById('f_name').value.trim();
+    const email = document.getElementById('f_email').value.trim();
+    const err = document.getElementById('infoError');
+    if(!date || !/^\d{4}$/.test(sid) || !name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+      err.textContent = '날짜, 4자리 학번, 이름, 올바른 형식의 이메일을 모두 입력해주세요.';
+      err.style.display='block';
+      return;
+    }
+    state.date = date; state.studentId = sid; state.name = name; state.parentEmail = email;
+    state.step = 'q0'; state.currentQ = 0;
+    saveState(); render();
+  });
+}
 
-    state.finalizeAttempts++;
-
-    if (!r.passed && state.finalizeAttempts < state.MAX_FINALIZE_ATTEMPTS && state.history.length < 12) {
-      // 컷트라인 미달: 심화 질문을 한 번 더 진행
-      $("result-status").textContent = "반성이 조금 더 필요해 보여요. 질문을 이어갈게요.";
-      const nr = await callGAS({ action: "nextTurn", payload: { studentInfo: state.studentInfo, history: state.history, needsDeepen: true } });
-      if (nr.ok && nr.question) {
-        state.currentQuestion = nr.question;
-        $("screen-result").classList.add("hidden");
-        $("screen-qa").classList.remove("hidden");
-        renderQuestion();
-        return;
+function renderQuestion(idx){
+  const q = QUESTIONS[idx];
+  const ans = state.answers[idx];
+  mainPanel.innerHTML = `
+    <div class="stitch-wrap">
+      ${stitchSvg(idx, QUESTIONS.length)}
+      <div class="stitch-caption"><span>${q.eyebrow}</span><span>${state.name} 학생</span></div>
+    </div>
+    <div class="step-eyebrow">${q.title}</div>
+    <h2 class="step-title">${q.question}</h2>
+    <textarea class="answer-box" id="ansBox" placeholder="솔직하고 구체적으로 적어주세요.">${ans.text}</textarea>
+    <div class="char-count" id="charCount">${(ans.text||'').length}자</div>
+    <div class="feedback-box" id="fbBox"></div>
+    <div class="loading-line" id="loadingLine"><span class="spinner"></span><span>답변을 살펴보는 중...</span></div>
+    <div class="btn-row">
+      ${idx>0 ? '<button class="btn btn-ghost" id="prevBtn">이전 질문</button>' : ''}
+      <button class="btn btn-primary" id="submitAnsBtn">답변 제출</button>
+    </div>
+  `;
+  const box = document.getElementById('ansBox');
+  box.addEventListener('input', ()=>{
+    document.getElementById('charCount').textContent = box.value.length + '자';
+    state.answers[idx].text = box.value;
+    saveState();
+  });
+  if(idx>0){
+    document.getElementById('prevBtn').addEventListener('click', ()=>{
+      state.step = 'q'+(idx-1); saveState(); render();
+    });
+  }
+  document.getElementById('submitAnsBtn').addEventListener('click', async ()=>{
+    const text = box.value.trim();
+    const fb = document.getElementById('fbBox');
+    const loading = document.getElementById('loadingLine');
+    fb.style.display='none';
+    if(text.length < 10){
+      fb.className = 'feedback-box retry';
+      fb.style.display='block';
+      fb.textContent = '조금 더 자세히 적어주세요. 짧은 답변으로는 마음이 잘 전달되지 않아요.';
+      return;
+    }
+    const btn = document.getElementById('submitAnsBtn');
+    btn.disabled = true; loading.style.display='flex';
+    try{
+      const result = await evaluateAnswer(idx, text);
+      state.answers[idx].text = text;
+      state.answers[idx].score = result.score;
+      state.answers[idx].feedback = result.feedback;
+      state.answers[idx].pass = !!result.pass;
+      saveState();
+      loading.style.display='none'; btn.disabled = false;
+      if(result.pass){
+        fb.className = 'feedback-box pass';
+        fb.style.display='block';
+        fb.textContent = result.feedback;
+        setTimeout(()=>{
+          if(idx < QUESTIONS.length-1){
+            state.step = 'q'+(idx+1);
+          }else{
+            state.step = 'review';
+          }
+          saveState(); render();
+        }, 900);
+      }else{
+        fb.className = 'feedback-box retry';
+        fb.style.display='block';
+        fb.textContent = result.feedback;
       }
+    }catch(e){
+      loading.style.display='none'; btn.disabled = false;
+      fb.className = 'feedback-box retry';
+      fb.style.display='block';
+      fb.textContent = '오류가 발생했습니다: ' + e.message;
     }
-
-    // 최종 확정
-    state.finalLetter = r.letter;
-    state.finalScore = r.score;
-    state.finalPassed = r.passed;
-
-    $("result-status").textContent = "";
-    $("result-badge").innerHTML = '<span class="score-badge ' + (r.passed ? "pass" : "fail") + '">반성 점수 ' + r.score + '점 · ' + (r.passed ? "통과" : "컷트라인 미달") + '</span>';
-    $("result-letter").textContent = r.letter;
-    $("btn-download").classList.remove("hidden");
-    $("btn-send-email").classList.remove("hidden");
-  } catch(e) {
-    $("result-status").textContent = "";
-    showErr("result-err", "서버 연결 오류: " + e.message);
-  }
+  });
 }
 
-// ---------- 텍스트 파일 다운로드 ----------
-$("btn-download").addEventListener("click", () => {
-  const blob = new Blob([state.finalLetter], { type: "text/plain;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "반성문_" + state.studentInfo.studentId + "_" + state.studentInfo.name + "_" + state.studentInfo.date + ".txt";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-});
+function renderReview(){
+  const scores = state.answers.map(a=>a.score||0);
+  const avg = Math.round(scores.reduce((a,b)=>a+b,0) / scores.length);
+  const cutoff = getCutoff();
+  const passed = avg >= cutoff;
+  const items = QUESTIONS.map((q,i)=>{
+    const a = state.answers[i];
+    const scoreCls = (a.score||0) < cutoff ? 'low' : 'high';
+    return `<div class="qa-item" data-idx="${i}">
+      <div class="qi-left">
+        <div class="qi-title">${q.title}</div>
+        <div class="qi-preview">${(a.text||'').slice(0,60)}</div>
+      </div>
+      <div class="qi-score ${scoreCls}">${a.score ?? '-'}점</div>
+    </div>`;
+  }).join('');
 
-// ---------- 이메일 발송 ----------
-$("btn-send-email").addEventListener("click", async () => {
-  showErr("result-err", "");
-  $("btn-send-email").disabled = true;
-  $("result-status").textContent = "이메일 발송 중...";
-  try {
-    const r = await callGAS({
-      action: "sendEmail",
-      payload: {
-        studentInfo: state.studentInfo,
-        letter: state.finalLetter,
-        score: state.finalScore,
-        passed: state.finalPassed
+  mainPanel.innerHTML = `
+    <div class="step-eyebrow">전체 점검</div>
+    <h2 class="step-title">답변을 모두 마쳤습니다</h2>
+    <div class="score-summary">
+      <span class="num">${avg}</span>
+      <span class="cut">/ 100점 · 컷트라인 ${cutoff}점</span>
+    </div>
+    <div class="cutoff-status ${passed?'pass':'fail'}">
+      ${passed ? '컷트라인을 넘었습니다. 반성문을 완성할 수 있어요.' : '아직 컷트라인에 도달하지 못했습니다. 점수가 낮은 항목을 눌러 다시 적어보세요.'}
+    </div>
+    <div class="qa-list">${items}</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="finalizeBtn" ${passed?'':'disabled'}>반성문 완성하기</button>
+    </div>
+    <div class="loading-line" id="loadingLineReview"><span class="spinner"></span><span>반성문을 정리하는 중...</span></div>
+  `;
+  mainPanel.querySelectorAll('.qa-item').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const idx = parseInt(el.getAttribute('data-idx'));
+      state.step = 'q'+idx; saveState(); render();
+    });
+  });
+  const finalizeBtn = document.getElementById('finalizeBtn');
+  if(finalizeBtn){
+    finalizeBtn.addEventListener('click', async ()=>{
+      const loading = document.getElementById('loadingLineReview');
+      finalizeBtn.disabled = true; loading.style.display='flex';
+      try{
+        const letter = await composeFinalLetter();
+        state.finalLetter = letter;
+        state.step = 'result';
+        saveState(); render();
+      }catch(e){
+        loading.style.display='none'; finalizeBtn.disabled = false;
+        alert('반성문 작성 중 오류가 발생했습니다: ' + e.message);
       }
     });
-    if (!r.ok) throw new Error(r.error || "발송 실패");
-    $("result-status").textContent = "이메일이 발송되었습니다. (부모님 및 교사)";
-  } catch(e) {
-    $("result-status").textContent = "";
-    showErr("result-err", "이메일 발송 오류: " + e.message);
-  } finally {
-    $("btn-send-email").disabled = false;
   }
-});
+}
+
+function renderResult(){
+  mainPanel.innerHTML = `
+    <div class="step-eyebrow">완성</div>
+    <h2 class="step-title">반성문이 완성되었습니다</h2>
+    <p class="step-desc">아래 내용을 다시 한 번 읽어보고, 필요하다면 직접 다듬어도 좋습니다.</p>
+    <div class="letter-paper">
+      <textarea id="letterBox">${state.finalLetter}</textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="downloadBtn">텍스트 파일로 저장</button>
+      <button class="btn btn-ghost" id="copyBtn">내용 복사</button>
+      <button class="btn btn-ghost" id="resetBtn">처음부터 다시 작성</button>
+    </div>
+    <div class="email-block">
+      <button class="btn btn-ghost" id="mailBtn">부모님께 이메일 바로 보내기</button>
+      <div class="loading-line" id="mailLoading"><span class="spinner"></span><span>이메일을 보내는 중...</span></div>
+      <div class="feedback-box" id="mailStatus"></div>
+      <div class="email-note">버튼을 누르면 별도 확인창 없이 부모님 이메일로 바로 전송됩니다.</div>
+    </div>
+  `;
+  const letterBox = document.getElementById('letterBox');
+  letterBox.addEventListener('input', ()=>{ state.finalLetter = letterBox.value; saveState(); });
+
+  document.getElementById('downloadBtn').addEventListener('click', ()=>{
+    const blob = new Blob([letterBox.value], {type:'text/plain;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `반성문_${state.studentId}_${state.name}_${state.date}.txt`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  });
+  document.getElementById('copyBtn').addEventListener('click', async ()=>{
+    try{
+      await navigator.clipboard.writeText(letterBox.value);
+      const btn = document.getElementById('copyBtn');
+      const orig = btn.textContent;
+      btn.textContent = '복사됨';
+      setTimeout(()=>{btn.textContent = orig;}, 1500);
+    }catch(e){ alert('복사에 실패했습니다. 직접 선택해서 복사해주세요.'); }
+  });
+  document.getElementById('mailBtn').addEventListener('click', async ()=>{
+    const subjectRaw = `[반성문] ${state.studentId} ${state.name} 학생`;
+    const statusBox = document.getElementById('mailStatus');
+    const mailBtn = document.getElementById('mailBtn');
+    const loading = document.getElementById('mailLoading');
+    statusBox.style.display = 'none';
+    mailBtn.disabled = true; loading.style.display='flex';
+    try{
+      await callGas({ action:'sendEmail', to: state.parentEmail, subject: subjectRaw, body: letterBox.value });
+      loading.style.display='none'; mailBtn.disabled = false;
+      statusBox.className = 'feedback-box pass';
+      statusBox.style.display = 'block';
+      statusBox.textContent = `${state.parentEmail} 주소로 이메일이 전송되었습니다.`;
+    }catch(e){
+      loading.style.display='none'; mailBtn.disabled = false;
+      statusBox.className = 'feedback-box retry';
+      statusBox.style.display = 'block';
+      statusBox.textContent = '전송에 실패했습니다: ' + e.message;
+    }
+  });
+  document.getElementById('resetBtn').addEventListener('click', ()=>{
+    if(confirm('처음부터 다시 작성하시겠습니까? 지금까지의 내용이 사라집니다.')){
+      localStorage.removeItem(LS_KEY_STATE);
+      state = freshState();
+      render();
+    }
+  });
+}
+
+render();
 </script>
 </body>
 </html>
